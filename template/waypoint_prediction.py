@@ -4,6 +4,7 @@ from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
 import time
+import math
 
 
 def normalize(v):
@@ -19,6 +20,16 @@ def curvature(waypoints):
     args: 
         waypoints [2, num_waypoints] !!!!!
     '''
+    curvature = 0
+    for i in range(1, waypoints.shape[1] - 1):
+                
+        i_point = np.array(waypoints[:,i]).reshape(2,-1)
+        j_point = np.array(waypoints[:,i+1]).reshape(2,-1)
+        k_point = np.array(waypoints[:,i-1]).reshape(2,-1)
+        
+        value = np.dot(normalize(j_point - i_point).T, normalize(i_point - k_point)).flatten()
+        curvature = curvature + value
+        
 
     return curvature
 
@@ -32,6 +43,9 @@ def smoothing_objective(waypoints, waypoints_center, weight_curvature=40):
         waypoints_center [2 * num_waypoints] !!!!!
         weight_curvature (default=40)
     '''
+    waypoints = waypoints.reshape(2,-1)
+    
+    
     # mean least square error between waypoint and way point center
     ls_tocenter = np.mean((waypoints_center - waypoints)**2)
 
@@ -55,8 +69,27 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
         parameter_bound_waypoints (default=1)
         waytype (default="smoothed")
     '''
+
+#    way_type = "center"
+    
     if way_type == "center":
         ##### TODO #####
+        
+        t = np.linspace(0, 1, 6)
+
+        
+        lane_boundary1_points_points = np.array(splev(t, roadside1_spline))
+        lane_boundary2_points_points = np.array(splev(t, roadside2_spline))
+        
+        way_points = np.zeros((2, num_waypoints))
+        
+        
+        for i in range(lane_boundary1_points_points.shape[1]):
+            mid_offset = np.array((lane_boundary2_points_points[:,i] - lane_boundary1_points_points[:,i])/2)
+            mid = lane_boundary1_points_points[:,i] + mid_offset            
+            way_points[:,i] = mid
+        
+        
      
         # create spline arguments
 
@@ -75,7 +108,21 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
         # derive roadside points from spline
 
         # derive center between corresponding roadside points
-        way_point_center = 
+        
+        t = np.linspace(0, 1, 6)
+
+        
+        lane_boundary1_points_points = np.array(splev(t, roadside1_spline))
+        lane_boundary2_points_points = np.array(splev(t, roadside2_spline))
+        
+        way_points_center = np.zeros((2, num_waypoints))
+        
+        
+        for i in range(lane_boundary1_points_points.shape[1]):
+            mid_offset = np.array((lane_boundary2_points_points[:,i] - lane_boundary1_points_points[:,i])/2)
+            mid = lane_boundary1_points_points[:,i] + mid_offset            
+            way_points_center[:,i] = mid
+        
         
         # optimization
         way_points = minimize(smoothing_objective, 
@@ -85,7 +132,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
         return way_points.reshape(2,-1)
 
 
-def target_speed_prediction(waypoints, num_waypoints_used=5,
+def target_speed_prediction(waypoints, num_waypoints_used=6,
                             max_speed=60, exp_constant=4.5, offset_speed=30):
     '''
     ##### TODO #####
@@ -102,6 +149,21 @@ def target_speed_prediction(waypoints, num_waypoints_used=5,
     output:
         target_speed (float)
     '''
-
-
+    K = 4.5
+    
+    value = -K * (num_waypoints_used - 2 - curvature(waypoints))
+    
+    target_speed = ((max_speed - offset_speed) * math.exp(value)) + offset_speed
+    
     return target_speed
+
+
+
+
+
+
+
+
+
+
+

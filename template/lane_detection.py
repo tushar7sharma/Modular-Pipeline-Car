@@ -217,9 +217,9 @@ class LaneDetection:
 
         # first lane_boundary points
         lane_boundary1_points, lane_boundary2_points, lane_found = self.find_first_lane_point(gradient_sum)
-        print(lane_boundary1_points)
-        print(lane_boundary2_points)
-        print(lane_found)
+#        print(lane_boundary1_points)
+#        print(lane_boundary2_points)
+#        print(lane_found)
         
         lane1_old = lane_boundary1_points
         lane2_old = lane_boundary2_points
