@@ -149,8 +149,8 @@ def target_speed_prediction(waypoints, num_waypoints_used=6,
     output:
         target_speed (float)
     '''
-    K = 4.5
-    
+    K = 4.5 
+        
     value = -K * (num_waypoints_used - 2 - curvature(waypoints))
     
     target_speed = ((max_speed - offset_speed) * math.exp(value)) + offset_speed

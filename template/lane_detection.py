@@ -6,21 +6,21 @@ from scipy.optimize import minimize
 import time
 import cv2
 
-def get_sample_img():
-#    path = "/Users/tusharsharma/Desktop/observation_00517.npy"
-#    test = np.load(path)
-#    print(test.shape)
-##    test = np.ones((96,96,3),np.uint8)*255
-##    test = test[:68,:,:]
-#    test = cv2.cvtColor(test, cv2.COLOR_BGR2GRAY)
-#    cv2.imwrite("/Users/tusharsharma/Desktop/car_image.jpg", test)
-    test = cv2.imread("/Users/tusharsharma/Desktop/car_image_crop.jpg", 0)
-#    cv2.imwrite("/Users/tusharsharma/Desktop/car_image_crop.jpg", test)
-#    test = np.reshape(test, (68,96,1))
-    
-    
-    return test
-    
+#def get_sample_img():
+##    path = "/Users/tusharsharma/Desktop/observation_00517.npy"
+##    test = np.load(path)
+##    print(test.shape)
+###    test = np.ones((96,96,3),np.uint8)*255
+###    test = test[:68,:,:]
+##    test = cv2.cvtColor(test, cv2.COLOR_BGR2GRAY)
+##    cv2.imwrite("/Users/tusharsharma/Desktop/car_image.jpg", test)
+#    test = cv2.imread("/Users/tusharsharma/Desktop/car_image_crop.jpg", 0)
+##    cv2.imwrite("/Users/tusharsharma/Desktop/car_image_crop.jpg", test)
+##    test = np.reshape(test, (68,96,1))
+#    
+#    
+#    return test
+#    
 
 class LaneDetection:
     '''
@@ -62,8 +62,7 @@ class LaneDetection:
         cropped_image = state_image_full[:68,:]
         gray_state_image = (cropped_image[:,:,0] + cropped_image[:,:,1] +
                             cropped_image[:,:,2])/3
-#        cv2.imwrite("/Users/tusharsharma/Desktop/new_gray.jpg", gray_state_image)
-        
+
         return gray_state_image[::-1] 
 
 
@@ -91,10 +90,7 @@ class LaneDetection:
         gradient_sum[thresholded_indices] = 0
         
 #        cv2.imwrite("/Users/tusharsharma/Desktop/laplace.jpg", )
-        
-        
-        
-        
+
         return gradient_sum
 
 
@@ -123,7 +119,6 @@ class LaneDetection:
             peaks.append(find_peaks(gradient_sum[i], distance = 3)[0])
             
         argmaxima = []
-        
         return peaks
 
 
@@ -142,20 +137,13 @@ class LaneDetection:
             lanes_found  true if lane_boundaries were found
         '''
         
-        image = get_sample_img()
-        gradients = np.gradient(image[::-1])
-        row_gradient = gradients[0]
-        gradient_sum = row_gradient
-        
-        
-        
+
         # Variable if lanes were found or not
         lanes_found = False
         row = 0
 
         # loop through the rows
         while not lanes_found:
-            
             # Find peaks with min distance of at least 3 pixel 
             argmaxima = find_peaks(gradient_sum[row],distance=3)[0]
 
@@ -237,11 +225,7 @@ class LaneDetection:
             
             row = 1
             
-            
-            
-            
-            
-            
+
             while(row < 68):
                 row_maxima = maxima[row]
                 
@@ -305,14 +289,7 @@ class LaneDetection:
         self.lane_boundary1_old = lane_boundary1
         self.lane_boundary2_old = lane_boundary2
         
-#        print(self.lane_boundary1_old)
-        
 
-        # output the spline
-        
-        
-        
-        
         return lane_boundary1, lane_boundary2
 
 
