@@ -4,23 +4,7 @@ from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
 import time
-import cv2
 
-#def get_sample_img():
-##    path = "/Users/tusharsharma/Desktop/observation_00517.npy"
-##    test = np.load(path)
-##    print(test.shape)
-###    test = np.ones((96,96,3),np.uint8)*255
-###    test = test[:68,:,:]
-##    test = cv2.cvtColor(test, cv2.COLOR_BGR2GRAY)
-##    cv2.imwrite("/Users/tusharsharma/Desktop/car_image.jpg", test)
-#    test = cv2.imread("/Users/tusharsharma/Desktop/car_image_crop.jpg", 0)
-##    cv2.imwrite("/Users/tusharsharma/Desktop/car_image_crop.jpg", test)
-##    test = np.reshape(test, (68,96,1))
-#    
-#    
-#    return test
-#    
 
 class LaneDetection:
     '''
@@ -36,9 +20,9 @@ class LaneDetection:
 
     def __init__(self, cut_size=68, spline_smoothness=10, gradient_threshold=14, distance_maxima_gradient=3):
         self.car_position = np.array([48,0])
-        self.spline_smoothness = spline_smoothness
+        self.spline_smoothness = 20
         self.cut_size = cut_size
-        self.gradient_threshold = gradient_threshold
+        self.gradient_threshold = 25
         self.distance_maxima_gradient = distance_maxima_gradient
         self.lane_boundary1_old = 0
         self.lane_boundary2_old = 0
@@ -47,7 +31,7 @@ class LaneDetection:
     def cut_gray(self, state_image_full):
         '''
         ##### TODO #####
-        This function should cut the imagen at the front end of the car (e.g. pixel row 68) 
+        This function should cut the image at the front end of the car (e.g. pixel row 68) 
         and translate to grey scale
 
         input:
@@ -57,12 +41,13 @@ class LaneDetection:
             gray_state_image 68x96x1
 
         '''
-#        path = "/Users/tusharsharma/Desktop/observation_00517.npy"
-#        state_image_full = np.load(path)
-        cropped_image = state_image_full[:68,:]
-        gray_state_image = (cropped_image[:,:,0] + cropped_image[:,:,1] +
-                            cropped_image[:,:,2])/3
-
+        # refereneces: 
+        # https://moonbooks.org/Articles/How-to-convert-an-image-to-grayscale-using-python-/
+        # https://en.wikipedia.org/wiki/Grayscale
+        cropped_img = state_image_full[:self.cut_size, :]
+        rgb_weights = [0.2989, 0.5870, 0.1140]
+        gray_state_image = np.dot(cropped_img[...,:3], rgb_weights)
+        # print(f'ret gray img dim: {np.shape(gray_state_image[::-1] )}')
         return gray_state_image[::-1] 
 
 
@@ -72,7 +57,8 @@ class LaneDetection:
         In order to find edges in the gray state image, 
         this function should derive the absolute gradients of the gray state image.
         Derive the absolute gradients using numpy for each pixel. 
-        To ignore small gradients, set all gradients below a threshold (self.gradient_threshold) to zero. 
+        To ignore small gradients, set all gradients below a 
+        threshold (self.gradient_threshold) to zero. 
 
         input:
             gray_state_image 68x96x1
@@ -81,16 +67,10 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         '''
-#        image = get_sample_img()
-#        gradients = np.gradient(image[::-1])
-#        row_gradient = gradients[0]
-        
-        gradient_sum = abs(np.gradient(gray_image)[0]) + abs(np.gradient(gray_image)[1])
+        gradient = np.gradient(gray_image)
+        gradient_sum = abs(gradient[0]) + abs(gradient[1])
         thresholded_indices = gradient_sum < self.gradient_threshold
         gradient_sum[thresholded_indices] = 0
-        
-#        cv2.imwrite("/Users/tusharsharma/Desktop/laplace.jpg", )
-
         return gradient_sum
 
 
@@ -105,21 +85,18 @@ class LaneDetection:
             gradient_sum 68x96x1
 
         output:
-            maxima (np.array) 2x Number_maxima
+            maxima (np.array) 68 x Number_maxima per row
 
         '''
-        
-#        image = get_sample_img()
-#        gradients = np.gradient(image[::-1])
-#        row_gradient = gradients[0]
-#        peaks = find_peaks(row_gradient, distance = 3)
-        peaks = []
-        
-        for i in range(gradient_sum.shape[0]):
-            peaks.append(find_peaks(gradient_sum[i], distance = 3)[0])
-            
         argmaxima = []
-        return peaks
+        # iterate row wise to find peaks
+        # distance argument cuz lanes should atleast be 3 pixels apart
+        #  find_peaks returns Indices of peaks in `x` that satisfy all given conditions.
+        for i in range(gradient_sum.shape[0]):
+            peaks, _ = find_peaks(gradient_sum[i], distance=3)
+            argmaxima.append(peaks)
+
+        return argmaxima
 
 
     def find_first_lane_point(self, gradient_sum):
@@ -137,13 +114,13 @@ class LaneDetection:
             lanes_found  true if lane_boundaries were found
         '''
         
-
         # Variable if lanes were found or not
         lanes_found = False
         row = 0
 
         # loop through the rows
         while not lanes_found:
+            
             # Find peaks with min distance of at least 3 pixel 
             argmaxima = find_peaks(gradient_sum[row],distance=3)[0]
 
@@ -197,6 +174,7 @@ class LaneDetection:
         '''
 
         # to gray
+        # print(f'calculating spline')
         gray_state = self.cut_gray(state_image_full)
 
         # edge detection via gradient sum and thresholding
@@ -204,13 +182,11 @@ class LaneDetection:
         maxima = self.find_maxima_gradient_rowwise(gradient_sum)
 
         # first lane_boundary points
-        lane_boundary1_points, lane_boundary2_points, lane_found = self.find_first_lane_point(gradient_sum)
-#        print(lane_boundary1_points)
-#        print(lane_boundary2_points)
-#        print(lane_found)
-        
-        lane1_old = lane_boundary1_points
-        lane2_old = lane_boundary2_points
+        lane_boundary1_points, lane_boundary2_points, lane_found = \
+            self.find_first_lane_point(gradient_sum)
+
+        lane1_prev = lane_boundary1_points
+        lane2_prev = lane_boundary2_points
 
         # if no lane was found,use lane_boundaries of the preceding step
         if lane_found:
@@ -222,39 +198,33 @@ class LaneDetection:
             # 3- delete maximum from maxima
             # 4- stop loop if there is no maximum left 
             #    or if the distance to the next one is too big (>=100)
-            
-            row = 1
-            
 
-            while(row < 68):
-                row_maxima = maxima[row]
+            row = 1
+            while row < 68:
+                row_max = maxima[row]
                 
-                if(len(row_maxima) < 2):
+                if len(row_max) < 2:
                     break
                 
-                A = np.argsort((row_maxima - lane1_old[0][0])**2)
-                B = np.argsort((row_maxima - lane2_old[0][0])**2)
-                point_1 = np.array([[row_maxima[A[0]],  row]])
-                point_2 = np.array([[row_maxima[B[0]],  row]])
-                
+                # sort the points according to their distence from previous lane predictions
+                # also, argsort returns tha indices that can be iterated insorted order
+                # hence we use A[0] and B[0] after sorting
+                A = np.argsort((row_max - lane1_prev[0][0])**2)
+                # print(f'A shape: {A.shape}')
+                B = np.argsort((row_max - lane2_prev[0][0])**2)
+                point_1 = np.array([[row_max[A[0]],  row]])
+                point_2 = np.array([[row_max[B[0]],  row]])
+                # print(f'point shape: {point_1.shape}')
                 lane_boundary1_points = np.append(lane_boundary1_points, point_1, axis=0)
                 lane_boundary2_points = np.append(lane_boundary2_points, point_2, axis=0)
-                
-            
-                
-                lane1_old = point_1
-                lane2_old = point_2
-                row+=1
-        
-            
-            
+                lane1_prev = point_1
+                lane2_prev = point_2
+                row += 1
 
             # lane_boundary 1
             lane_boundary1 = []
-            lane_boundary2 = []
-
             # lane_boundary 2
-
+            lane_boundary2 = []
             ################
             
 
@@ -268,14 +238,12 @@ class LaneDetection:
 
                 # Pay attention: the first lane_boundary point might occur twice
                 # lane_boundary 1
-
+                lane_boundary1, _ = splprep(lane_boundary1_points.T, k=3,
+                                            s=self.spline_smoothness)
                 # lane_boundary 2
-            
-                
-                lane_boundary1, u = splprep(lane_boundary1_points.T, k = 3, s = self.spline_smoothness)
-                
-                lane_boundary2, u = splprep(lane_boundary2_points.T, k = 3, s = self.spline_smoothness)
-                
+                lane_boundary2, _ = splprep(lane_boundary2_points.T, k=3,
+                                            s=self.spline_smoothness)
+                # print("temp")
                 
             else:
                 lane_boundary1 = self.lane_boundary1_old
@@ -288,8 +256,9 @@ class LaneDetection:
 
         self.lane_boundary1_old = lane_boundary1
         self.lane_boundary2_old = lane_boundary2
-        
 
+        # output the spline
+        # print(f'returned spline')
         return lane_boundary1, lane_boundary2
 
 
@@ -299,8 +268,6 @@ class LaneDetection:
         '''
         # evaluate spline for 6 different spline parameters.
         t = np.linspace(0, 1, 6)
-
-        
         lane_boundary1_points_points = np.array(splev(t, self.lane_boundary1_old))
         lane_boundary2_points_points = np.array(splev(t, self.lane_boundary2_old))
         
@@ -317,3 +284,4 @@ class LaneDetection:
         plt.gca().axes.get_xaxis().set_visible(False)
         plt.gca().axes.get_yaxis().set_visible(False)
         fig.canvas.flush_events()
+

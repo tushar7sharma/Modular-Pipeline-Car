@@ -23,8 +23,8 @@ class LongitudinalController:
 
         # PID parameters
         self.KP = KP
-        self.KI = KI
-        self.KD = KD
+        self.KI = 0.0
+        self.KD = 0.0
 
     def PID_step(self, speed, target_speed):
         '''
@@ -41,17 +41,14 @@ class LongitudinalController:
             control (u)
         '''
         
+        # define error from set point target_speed to speed 
+
+        # derive PID elements
         e_t = target_speed - speed
         
         self.sum_error += e_t
         
-        u_t = (self.KP * e_t) + (self.KD  * (e_t - self.last_error)) + (self.KI * self.sum_error)
-        
-        control = u_t
-        
-        # define error from set point target_speed to speed 
-
-        # derive PID elements
+        control = (self.KP * e_t) + (self.KD  * (e_t - self.last_error)) + (self.KI * self.sum_error)
 
         return control
 
@@ -72,7 +69,6 @@ class LongitudinalController:
         control = self.PID_step(speed, target_speed)
         brake = 0
         gas = 0
-    
 
         # translate the signal from the PID controller 
         # to the action variables gas and brake

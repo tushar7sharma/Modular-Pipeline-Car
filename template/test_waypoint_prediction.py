@@ -57,7 +57,6 @@ while True:
     # waypoint and target_speed prediction
     waypoints = waypoint_prediction(lane1, lane2)
     target_speed = target_speed_prediction(waypoints)
-#    print("Target Speed : " + str(target_speed))
 
     # reward
     total_reward += r
@@ -66,6 +65,7 @@ while True:
     if steps % 2 == 0 or done:
         print("\naction " + str(["{:+0.2f}".format(x) for x in a]))
         print("step {} total_reward {:+0.2f}".format(steps, total_reward))
+        print("target speed: {} ".format(target_speed))
 
         LD_module.plot_state_lane(s, steps, fig, waypoints=waypoints)
         
