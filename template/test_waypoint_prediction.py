@@ -57,6 +57,7 @@ while True:
     # waypoint and target_speed prediction
     waypoints = waypoint_prediction(lane1, lane2)
     target_speed = target_speed_prediction(waypoints)
+    print("Target speed : " + str(target_speed))
 
     # reward
     total_reward += r
