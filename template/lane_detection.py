@@ -20,8 +20,8 @@ class LaneDetection:
 
     '''
 
-    def __init__(self, cut_size=68, spline_smoothness=10, gradient_threshold=14, distance_maxima_gradient=3):
-        self.car_position = np.array([48,0])
+    def __init__(self, cut_size=68, spline_smoothness=20, gradient_threshold=25, distance_maxima_gradient=3):
+        self.car_position = np.array([48, 0])
         self.spline_smoothness = spline_smoothness
         self.cut_size = cut_size
         self.gradient_threshold = gradient_threshold
@@ -89,7 +89,7 @@ class LaneDetection:
         for i, peak in enumerate(peaks):
             maxs = []
             for j in range(len(peak)):
-                maxs.append([peak[j], i])
+                maxs.append([peak[j ], i])
             argmaxima.append(maxs)
         return np.array(argmaxima)
 
