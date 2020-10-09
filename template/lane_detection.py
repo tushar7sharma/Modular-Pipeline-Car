@@ -6,6 +6,7 @@ from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
 import time
 
+NUM_WAYPOINTS = 6
 
 class LaneDetection:
     '''
@@ -225,7 +226,7 @@ class LaneDetection:
         Plot lanes and way points
         '''
         # evaluate spline for 6 different spline parameters.
-        t = np.linspace(0, 1, 6)
+        t = np.linspace(0, 1, NUM_WAYPOINTS)
         lane_boundary1_points_points = np.array(splev(t, self.lane_boundary1_old))
         lane_boundary2_points_points = np.array(splev(t, self.lane_boundary2_old))
         
