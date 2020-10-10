@@ -21,6 +21,7 @@ import cv2
 #    
 #    return test
 #    
+NUM_WAYPOINTS=6
 
 class LaneDetection:
     '''
@@ -34,7 +35,7 @@ class LaneDetection:
 
     '''
 
-    def __init__(self, cut_size=68, spline_smoothness=10, gradient_threshold=14, distance_maxima_gradient=3):
+    def __init__(self, cut_size=68, spline_smoothness=20, gradient_threshold=14, distance_maxima_gradient=3):
         self.car_position = np.array([48,0])
         self.spline_smoothness = spline_smoothness
         self.cut_size = cut_size
@@ -338,7 +339,7 @@ class LaneDetection:
         Plot lanes and way points
         '''
         # evaluate spline for 6 different spline parameters.
-        t = np.linspace(0, 1, 6)
+        t = np.linspace(0, 1, NUM_WAYPOINTS)
 
         
         lane_boundary1_points_points = np.array(splev(t, self.lane_boundary1_old))

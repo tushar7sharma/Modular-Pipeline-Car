@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 import time
 import math
 
+NUM_WAYPOINTS=6
 
 def normalize(v):
     norm = np.linalg.norm(v,axis=0) + 0.00001
@@ -55,7 +56,7 @@ def smoothing_objective(waypoints, waypoints_center, weight_curvature=40):
     return -1 * weight_curvature * curv + ls_tocenter
 
 
-def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way_type = "smooth"):
+def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=NUM_WAYPOINTS, way_type = "smooth"):
     '''
     ##### TODO #####
     Predict waypoint via two different methods:
@@ -75,7 +76,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
     if way_type == "center":
         ##### TODO #####
         
-        t = np.linspace(0, 1, 6)
+        t = np.linspace(0, 1, NUM_WAYPOINTS)
 
         
         lane_boundary1_points_points = np.array(splev(t, roadside1_spline))
@@ -109,7 +110,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
 
         # derive center between corresponding roadside points
         
-        t = np.linspace(0, 1, 6)
+        t = np.linspace(0, 1, NUM_WAYPOINTS)
 
         
         lane_boundary1_points_points = np.array(splev(t, roadside1_spline))
@@ -132,7 +133,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
         return way_points.reshape(2,-1)
 
 
-def target_speed_prediction(waypoints, num_waypoints_used=6,
+def target_speed_prediction(waypoints, num_waypoints_used=NUM_WAYPOINTS,
                             max_speed=60, exp_constant=4.5, offset_speed=30):
     '''
     ##### TODO #####
@@ -151,7 +152,7 @@ def target_speed_prediction(waypoints, num_waypoints_used=6,
     '''
     K = 4.5 
         
-    value = -K * (num_waypoints_used - 2 - curvature(waypoints))
+    value = -K * np.abs(num_waypoints_used - 2 - curvature(waypoints))
     
     target_speed = ((max_speed - offset_speed) * math.exp(value)) + offset_speed
     
