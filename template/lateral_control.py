@@ -19,7 +19,7 @@ class LateralController:
     '''
 
 
-    def __init__(self, gain_constant=5, damping_constant=0.6):
+    def __init__(self, gain_constant=5, damping_constant=0.1):
 
         self.gain_constant = gain_constant
         self.damping_constant = damping_constant
