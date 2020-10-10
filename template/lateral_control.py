@@ -41,7 +41,7 @@ class LateralController:
 
         third = waypoints[:, 2] - np.array([48, 0])
 
-        second_minus_first = first - second
+        second_minus_first = second - first
 
         third_minus_second = third - second
 
