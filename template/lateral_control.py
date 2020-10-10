@@ -36,17 +36,26 @@ class LateralController:
         '''
 
         # derive orientation error as the angle of the first path segment to the car orientation
-        first = waypoints[:, 1] - np.array([48,0])
-        second = waypoints[:, 0] - np.array([48,0])
+        first = waypoints[:, 1] - np.array([48, 0])
+        second = waypoints[:, 0] - np.array([48, 0])
+
+        third = waypoints[:, 2] - np.array([48, 0])
 
         second_minus_first = first - second
-        tan_theta = second_minus_first[0] / second_minus_first[1]
-        orientation_error = np.arctan(tan_theta)
 
+        third_minus_second = third - second
+
+        tan_theta_1 = second_minus_first[0] / second_minus_first[1]
+        orientation_error_1 = np.arctan(tan_theta_1)
+
+        tan_theta_2 = third_minus_second[0] / third_minus_second[1]
+        orientation_error_2 = np.arctan(tan_theta_2)
+
+        orientation_error = orientation_error_1 * 0.7 + orientation_error_2 * 0.3
         # derive cross track error as distance between desired waypoint at spline parameter equal zero ot the car position
         # (48,0 is the position of the car). Since we only want lateral distance,
         # the cross track error is the difference between the first waypoint's x dimention & 48.
-        cross_track_error = waypoints[0, 0] - 48
+        cross_track_error = (waypoints[0, 0] - 48) * 0.8
 
         # derive stanley control law
         # prevent division by zero by adding as small epsilon
@@ -57,7 +66,8 @@ class LateralController:
 
         self.previous_steering_angle = steering_angle
         # clip to the maximum stering angle (0.4) and rescale the steering action space
-        return np.clip(steering_angle, -0.4, 0.4) / 0.8
+        ret = np.clip(steering_angle, -0.4, 0.4) /0.8
+        return ret
 
 
 
