@@ -11,7 +11,7 @@ from pyglet import gl
 from pyglet.window import key
 
 # action variables 
-a = np.array( [0.0, 0.1, 0.0] )
+a = np.array( [0.0, 0.4, 0.0] )
 
 # init environement
 env = CarRacing()

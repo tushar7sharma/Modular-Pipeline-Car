@@ -103,6 +103,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
         # derive roadside points from spline
 
         # derive center between corresponding roadside points
+        
         way_points_center = waypoint_prediction(
             roadside1_spline, roadside2_spline, way_type="center")
         

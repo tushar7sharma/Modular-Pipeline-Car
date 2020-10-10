@@ -4,7 +4,7 @@ from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
 import time
-
+#import cv2
 
 class LaneDetection:
     '''
@@ -71,6 +71,8 @@ class LaneDetection:
         gradient_sum = abs(gradient[0]) + abs(gradient[1])
         thresholded_indices = gradient_sum < self.gradient_threshold
         gradient_sum[thresholded_indices] = 0
+#        cv2.imshow("win",gradient_sum)
+#        cv2.waitKey(0)
         return gradient_sum
 
 
