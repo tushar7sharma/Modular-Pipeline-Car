@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
-import time
 import math
 
 
@@ -116,7 +115,7 @@ def waypoint_prediction(roadside1_spline, roadside2_spline, num_waypoints=6, way
 
 
 def target_speed_prediction(waypoints, num_waypoints_used=6,
-                            max_speed=60, exp_constant=4.5, offset_speed=30):
+                            max_speed=60, exp_constant=6, offset_speed=30):
     '''
     ##### TODO #####
     Predict target speed given waypoints
@@ -132,7 +131,8 @@ def target_speed_prediction(waypoints, num_waypoints_used=6,
     output:
         target_speed (float)
     '''
-    K = 4.5 
+#    print(max_speed)
+    K = exp_constant
         
     value = -K * abs(num_waypoints_used - 2 - curvature(waypoints))
     

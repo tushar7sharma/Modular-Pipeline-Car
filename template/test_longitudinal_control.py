@@ -33,7 +33,7 @@ fig = plt.figure()
 plt.ion()
 plt.show()
 
-
+env.seed(91294619)
 while True:
     # perform step
     s, r, done, speed, info = env.step(a)

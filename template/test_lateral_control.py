@@ -31,6 +31,9 @@ LatC_module = LateralController()
 fig = plt.figure()
 plt.ion()
 plt.show()
+env.seed(68545857)
+
+
 
 while True:
     # perform step

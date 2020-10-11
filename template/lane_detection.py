@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.interpolate import splprep, splev
 from scipy.optimize import minimize
-import time
-#import cv2
 
 class LaneDetection:
     '''
@@ -18,11 +16,11 @@ class LaneDetection:
 
     '''
 
-    def __init__(self, cut_size=68, spline_smoothness=10, gradient_threshold=14, distance_maxima_gradient=3):
+    def __init__(self, cut_size=68, spline_smoothness=10, gradient_threshold=25, distance_maxima_gradient=3):
         self.car_position = np.array([48,0])
-        self.spline_smoothness = 20
+        self.spline_smoothness = spline_smoothness
         self.cut_size = cut_size
-        self.gradient_threshold = 25
+        self.gradient_threshold = gradient_threshold
         self.distance_maxima_gradient = distance_maxima_gradient
         self.lane_boundary1_old = 0
         self.lane_boundary2_old = 0
@@ -68,11 +66,10 @@ class LaneDetection:
 
         '''
         gradient = np.gradient(gray_image)
+        #print(len(gradient[1]))
         gradient_sum = abs(gradient[0]) + abs(gradient[1])
         thresholded_indices = gradient_sum < self.gradient_threshold
         gradient_sum[thresholded_indices] = 0
-#        cv2.imshow("win",gradient_sum)
-#        cv2.waitKey(0)
         return gradient_sum
 
 

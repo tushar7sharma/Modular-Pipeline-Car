@@ -23,8 +23,8 @@ class LongitudinalController:
 
         # PID parameters
         self.KP = KP
-        self.KI = 0.0
-        self.KD = 0.0
+        self.KI = KI
+        self.KD = KD
 
     def PID_step(self, speed, target_speed):
         '''
